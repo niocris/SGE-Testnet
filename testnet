@@ -34,11 +34,14 @@ sged config chain-id sge-network-2
 Create/recover wallet
 sged keys add <walletname>
 sged keys add <walletname> --recover
+
 Download Genesis
+
 wget -O $HOME/.sge/config/genesis.json "https://raw.githubusercontent.com/sge-network/networks/master/sge-network-2/genesis.json"
 sha256sum $HOME/.sge/config/genesis.json
 
 d5e51eeb2e4eab83bb7272525ff7d1f605561c6b5cab0465807866149e3a1fc4
+
 Set up the minimum gas price and Peers/Seeds/Filter peers/MaxPeers
 sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"0usge\"/" $HOME/.sge/config/app.toml
 sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $HOME/.sge/config/config.toml
@@ -62,7 +65,9 @@ sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$pruning_interval\"/" ~
 Indexer (optional)
 indexer="null" && \
 sed -i -e "s/^indexer *=.*/indexer = \"$indexer\"/" $HOME/.sge/config/config.toml
+
 Download addrbook
+
 wget -O $HOME/.sge/config/addrbook.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/SGE/addrbook.json"
 StateSync
 SNAP_RPC=sge.rpc.t.stavr.tech:1157
@@ -81,16 +86,7 @@ s|^(trust_hash[[:space:]]+=[[:space:]]+).*$|\1\"$TRUST_HASH\"| ; \
 s|^(seeds[[:space:]]+=[[:space:]]+).*$|\1\"\"|" $HOME/.sge/config/config.toml
 sged tendermint unsafe-reset-all --home /root/.sge --keep-addr-book
 systemctl restart sged && journalctl -u sged -f -o cat
-SnapShot (~0.2 GB) updated every 5 hours
-cd $HOME
-snap install lz4
-sudo systemctl stop sged
-cp $HOME/.sge/data/priv_validator_state.json $HOME/.sge/priv_validator_state.json.backup
-rm -rf $HOME/.sge/data
-curl -o - -L http://sge.snapshot.stavr.tech:1003/sge/sge-snap.tar.lz4 | lz4 -c -d - | tar -x -C $HOME/.sge --strip-components 2
-mv $HOME/.sge/priv_validator_state.json.backup $HOME/.sge/data/priv_validator_state.json
-wget -O $HOME/.sge/config/addrbook.json "https://raw.githubusercontent.com/obajay/nodes-Guides/main/SGE/addrbook.json"
-sudo systemctl restart sged && journalctl -u sged -f -o cat
+
 Create a service file
 sudo tee /etc/systemd/system/sged.service > /dev/null <<EOF
 [Unit]
@@ -107,11 +103,15 @@ LimitNOFILE=65535
 [Install]
 WantedBy=multi-user.target
 EOF
+
 Start
+
 sudo systemctl daemon-reload
 sudo systemctl enable sged
 sudo systemctl restart sged && sudo journalctl -u sged -f -o cat
+
 Create validator
+
 sged tx staking create-validator \
   --amount 1000000usge \
   --from <walletName> \
@@ -125,7 +125,9 @@ sged tx staking create-validator \
   --identity="" \
   --details="" \
   --website="" -y
+
 Delete node
+
 sudo systemctl stop sged && \
 sudo systemctl disable sged && \
 rm /etc/systemd/system/sged.service && \
@@ -134,11 +136,15 @@ cd $HOME && \
 rm -rf sge && \
 rm -rf .sge && \
 rm -rf $(which sged)
+
 Sync Info
+
 sged status 2>&1 | jq .SyncInfo
+
 NodeINfo
+
 sged status 2>&1 | jq .NodeInfo
+
 Check node logs
+
 sudo journalctl -u sged -f -o cat
-Check Balance
-sged query bank balances sge...address1yjgn7z09ua9vms259j
